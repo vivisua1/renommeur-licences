@@ -7,7 +7,7 @@ import os
 # -----------------------------
 # CONFIG GITHUB
 # -----------------------------
-GITHUB_TOKEN = "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"  # ⚠️ Mets ton token GitHub ici
+GITHUB_TOKEN = "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"  # ⚠️ Mets ton token GitHub ici
 REPO = "vivisua1/renommeur-licences"
 FILE_PATH = "licences.json"
 
