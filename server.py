@@ -88,7 +88,7 @@ def admin():
     if pwd != ADMIN_PASSWORD:
         return "<h3>Accès refusé</h3>"
 
-    url = f"https://raw.githubusercontent.com/{REPO}/main/{FILE_PATH}"
+   url = f"https://api.github.com/repos/{REPO}/contents/{FILE_PATH}?ref=main"
     data = requests.get(url).json()
 
     html = "<h2>Dashboard Licences</h2><ul>"
