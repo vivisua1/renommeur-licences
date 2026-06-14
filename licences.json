@@ -1,10 +1,1 @@
-{
-    "CLE_EXISTANTE": {
-        "email": "exemple@mail.com",
-        "expires": "2030-01-01"
-    },
-    "VPRO-2026-TEST-001": {
-        "email": "test@pro.com",
-        "expires": "2030-01-01"
-    }
-}
+{}
