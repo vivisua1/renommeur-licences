@@ -25,14 +25,18 @@ with open("activation.html", "r", encoding="utf-8") as f:
 # AJOUT AUTOMATIQUE D’UNE LICENCE (EXPIRATION 30 JOURS)
 # -----------------------------
 def add_licence(key, email):
-    url = f"https://api.github.com/repos/{REPO}/contents/{FILE_PATH}"
+    url = f"https://api.github.com/repos/{REPO}/contents/{FILE_PATH}?ref=main"
 
     # Récupérer le fichier actuel
     r = requests.get(url, headers={"Authorization": f"token {GITHUB_TOKEN}"})
     data = r.json()
 
+    if "download_url" not in data:
+        raise Exception(f"GitHub n'a pas renvoyé download_url. Réponse : {data}")
+
     # Télécharger le JSON actuel
-    content = json.loads(requests.get(data["download_url"]).text)
+    current_json = requests.get(data["download_url"]).text
+    content = json.loads(current_json)
 
     # Ajouter la licence
     content[key] = {
@@ -40,13 +44,13 @@ def add_licence(key, email):
         "expires": str(date.today() + timedelta(days=30))
     }
 
-    # Encoder en base64 (GitHub API)
+    # Encoder en base64
     new_content = json.dumps(content, indent=4)
     encoded = base64.b64encode(new_content.encode()).decode()
 
     # Commit sur GitHub
-    requests.put(
-        url,
+    commit = requests.put(
+        f"https://api.github.com/repos/{REPO}/contents/{FILE_PATH}",
         headers={"Authorization": f"token {GITHUB_TOKEN}"},
         json={
             "message": f"Add licence {key}",
@@ -54,6 +58,9 @@ def add_licence(key, email):
             "sha": data["sha"]
         }
     )
+
+    if commit.status_code >= 300:
+        raise Exception(f"Erreur GitHub: {commit.text}")
 
 # -----------------------------
 # ROUTE : Page d’accueil
