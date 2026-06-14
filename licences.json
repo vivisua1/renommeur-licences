@@ -1,6 +1,10 @@
 {
-    "V-PRO-9F3A-2026": {
-        "email": "client@gmail.com",
-        "expires": "2027-01-01"
+    "CLE_EXISTANTE": {
+        "email": "exemple@mail.com",
+        "expires": "2030-01-01"
+    },
+    "VPRO-2026-TEST-001": {
+        "email": "test@pro.com",
+        "expires": "2030-01-01"
     }
 }
