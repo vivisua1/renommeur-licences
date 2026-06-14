@@ -1,6 +1,7 @@
 from flask import Flask, request
 import requests, json
 from datetime import date, timedelta
+import base64
 import os
 
 # -----------------------------
@@ -10,37 +11,38 @@ GITHUB_TOKEN = "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"  # ⚠️ Mets ton tok
 REPO = "vivisua1/renommeur-licences"
 FILE_PATH = "licences.json"
 
-ADMIN_PASSWORD = "V-ADMIN-2026"  # ⚠️ Change-le si tu veux
+ADMIN_PASSWORD = "V-ADMIN-2026"
 
 app = Flask(__name__)
 
 # -----------------------------
 # CHARGER LA PAGE HTML
 # -----------------------------
-HTML = open("activation.html", encoding="utf-8").read()
+with open("activation.html", "r", encoding="utf-8") as f:
+    HTML = f.read()
 
 # -----------------------------
-# AJOUT AUTOMATIQUE D’UNE LICENCE (EXPIRATION 1 MOIS)
+# AJOUT AUTOMATIQUE D’UNE LICENCE (EXPIRATION 30 JOURS)
 # -----------------------------
 def add_licence(key, email):
     url = f"https://api.github.com/repos/{REPO}/contents/{FILE_PATH}"
 
-    # Récupérer le fichier actuel sur GitHub
+    # Récupérer le fichier actuel
     r = requests.get(url, headers={"Authorization": f"token {GITHUB_TOKEN}"})
     data = r.json()
 
     # Télécharger le JSON actuel
     content = json.loads(requests.get(data["download_url"]).text)
 
-    # Ajouter la licence avec expiration dans 30 jours
+    # Ajouter la licence
     content[key] = {
         "email": email,
         "expires": str(date.today() + timedelta(days=30))
     }
 
-    # Encoder le nouveau contenu
+    # Encoder en base64 (GitHub API)
     new_content = json.dumps(content, indent=4)
-    encoded = new_content.encode("utf-8").decode("utf-8")
+    encoded = base64.b64encode(new_content.encode()).decode()
 
     # Commit sur GitHub
     requests.put(
@@ -48,20 +50,20 @@ def add_licence(key, email):
         headers={"Authorization": f"token {GITHUB_TOKEN}"},
         json={
             "message": f"Add licence {key}",
-            "content": encoded.encode("utf-8").hex(),
+            "content": encoded,
             "sha": data["sha"]
         }
     )
 
 # -----------------------------
-# ROUTE : Page d’activation (formulaire)
+# ROUTE : Page d’accueil
 # -----------------------------
 @app.route("/", methods=["GET"])
 def home():
     return HTML
 
 # -----------------------------
-# ROUTE : Traitement de l’activation
+# ROUTE : Activation
 # -----------------------------
 @app.route("/activate", methods=["POST"])
 def activate():
@@ -71,15 +73,14 @@ def activate():
     add_licence(key, email)
 
     return f"""
-    <h2>Licence activée ✅</h2>
+    <h2>Licence activée !</h2>
     <p>Email : {email}</p>
     <p>Clé : {key}</p>
     <p>Expiration : {str(date.today() + timedelta(days=30))}</p>
-    <p>Vous pouvez maintenant débloquer la version PRO dans votre logiciel.</p>
     """
 
 # -----------------------------
-# ROUTE : Dashboard admin (voir les licences)
+# ROUTE : Dashboard admin
 # -----------------------------
 @app.route("/admin")
 def admin():
